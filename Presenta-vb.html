@@ -47,8 +47,8 @@
 
         .team-logo {
             position: absolute;
-            width: 200px;
-            height: 200px;
+            width: 280px;
+            height: 280px;
             object-fit: contain;
             filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.6));
             opacity: 0;
@@ -143,10 +143,32 @@
             bottom: 20%;
             transform: translateX(50%);
         }
+
+        #competicion-name {
+            position: absolute;
+            top: 15%;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 36px;
+            font-weight: 700;
+            color: #ffffff;
+            text-transform: uppercase;
+            text-shadow: 
+                0 0 10px rgba(255, 255, 255, 0.8),
+                0 4px 15px rgba(0, 0, 0, 0.9),
+                0 2px 5px rgba(0, 0, 0, 0.7);
+            letter-spacing: 2px;
+            opacity: 0;
+            text-align: center;
+            max-width: 80%;
+        }
     </style>
 </head>
 <body>
     <div id="overlay-container">
+        <!-- Competition Name -->
+        <div id="competicion-name"></div>
+
         <!-- SVG Volleyball Court -->
         <svg id="volleyball-court" width="900" height="500" viewBox="0 0 900 500">
             <!-- Outer court rectangle -->
@@ -191,8 +213,9 @@
             return {
                 team1: params.get('team1') || 'TEAM 1',
                 team2: params.get('team2') || 'TEAM 2',
-                logo1: params.get('logo1') || 'https://via.placeholder.com/200x200/FF6B6B/ffffff?text=TEAM+1',
-                logo2: params.get('logo2') || 'https://via.placeholder.com/200x200/4ECDC4/ffffff?text=TEAM+2'
+                logo1: params.get('logo1') || 'https://via.placeholder.com/280x280/FF6B6B/ffffff?text=TEAM+1',
+                logo2: params.get('logo2') || 'https://via.placeholder.com/280x280/4ECDC4/ffffff?text=TEAM+2',
+                competicion: params.get('competicion') || 'CAMPEONATO NACIONAL'
             };
         }
 
@@ -200,9 +223,10 @@
         function initOverlay() {
             const params = getURLParams();
             
-            // Set team names and logos
+            // Set team names, logos and competition
             document.getElementById('team1-name').textContent = params.team1;
             document.getElementById('team2-name').textContent = params.team2;
+            document.getElementById('competicion-name').textContent = params.competicion;
             document.getElementById('logo-team1').src = params.logo1;
             document.getElementById('logo-team2').src = params.logo2;
 
@@ -213,11 +237,25 @@
         function animateOverlay() {
             const timeline = gsap.timeline();
 
+            // Show competition name first
+            timeline.fromTo('#competicion-name',
+                {
+                    opacity: 0,
+                    y: -30
+                },
+                {
+                    opacity: 1,
+                    y: 0,
+                    duration: 0.8,
+                    ease: 'power2.out'
+                }
+            );
+
             // Show court container
             timeline.to('#volleyball-court', {
                 opacity: 1,
                 duration: 0.5
-            });
+            }, '-=0.3');
 
             // Draw court lines using stroke-dashoffset
             timeline.to('.court-line', {
