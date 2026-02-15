@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1920, height=1080">
+    <title>Volleyball VS Overlay</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            width: 1920px;
+            height: 1080px;
+            background: transparent;
+            overflow: hidden;
+            font-family: 'Orbitron', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #overlay-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #volleyball-court {
+            position: absolute;
+            opacity: 0;
+        }
+
+        .court-line {
+            fill: none;
+            stroke: #ffffff;
+            stroke-width: 4;
+            stroke-linecap: round;
+            filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.8));
+        }
+
+        .team-logo {
+            position: absolute;
+            width: 200px;
+            height: 200px;
+            object-fit: contain;
+            filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.6));
+            opacity: 0;
+            transform: scale(0);
+        }
+
+        #logo-team1 {
+            left: 25%;
+            top: 50%;
+            transform: translate(-50%, -50%) scale(0);
+        }
+
+        #logo-team2 {
+            right: 25%;
+            top: 50%;
+            transform: translate(50%, -50%) scale(0);
+        }
+
+        #vs-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            opacity: 0;
+            z-index: 10;
+        }
+
+        #vs-text {
+            font-size: 120px;
+            font-weight: 900;
+            color: #ffffff;
+            text-shadow: 
+                0 0 20px rgba(255, 255, 255, 1),
+                0 0 40px rgba(255, 255, 255, 0.8),
+                0 0 60px rgba(255, 255, 255, 0.6),
+                0 4px 10px rgba(0, 0, 0, 0.8);
+            letter-spacing: 8px;
+        }
+
+        #lightning-effect {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 300px;
+            height: 300px;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        .lightning-glow {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: radial-gradient(circle, 
+                rgba(255, 255, 255, 1) 0%, 
+                rgba(135, 206, 250, 0.8) 20%,
+                rgba(255, 255, 255, 0.4) 40%,
+                transparent 70%);
+            animation: pulse-glow 0.3s ease-in-out;
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { transform: scale(0.8); opacity: 0; }
+            50% { transform: scale(1.5); opacity: 1; }
+        }
+
+        .team-name {
+            position: absolute;
+            font-size: 48px;
+            font-weight: 700;
+            color: #ffffff;
+            text-transform: uppercase;
+            text-shadow: 
+                0 0 10px rgba(255, 255, 255, 0.8),
+                0 4px 15px rgba(0, 0, 0, 0.9),
+                0 2px 5px rgba(0, 0, 0, 0.7);
+            letter-spacing: 3px;
+            opacity: 0;
+        }
+
+        #team1-name {
+            left: 25%;
+            bottom: 20%;
+            transform: translateX(-50%);
+        }
+
+        #team2-name {
+            right: 25%;
+            bottom: 20%;
+            transform: translateX(50%);
+        }
+    </style>
+</head>
+<body>
+    <div id="overlay-container">
+        <!-- SVG Volleyball Court -->
+        <svg id="volleyball-court" width="900" height="500" viewBox="0 0 900 500">
+            <!-- Outer court rectangle -->
+            <rect class="court-line" x="50" y="50" width="800" height="400" stroke-dasharray="2400" stroke-dashoffset="2400"/>
+            
+            <!-- Center line -->
+            <line class="court-line" x1="450" y1="50" x2="450" y2="450" stroke-dasharray="400" stroke-dashoffset="400"/>
+            
+            <!-- Attack line left -->
+            <line class="court-line" x1="250" y1="50" x2="250" y2="450" stroke-dasharray="400" stroke-dashoffset="400"/>
+            
+            <!-- Attack line right -->
+            <line class="court-line" x1="650" y1="50" x2="650" y2="450" stroke-dasharray="400" stroke-dashoffset="400"/>
+        </svg>
+
+        <!-- Lightning Effect -->
+        <div id="lightning-effect">
+            <div class="lightning-glow"></div>
+        </div>
+
+        <!-- VS Text -->
+        <div id="vs-container">
+            <div id="vs-text">VS</div>
+        </div>
+
+        <!-- Team Logos -->
+        <img id="logo-team1" class="team-logo" src="" alt="Team 1">
+        <img id="logo-team2" class="team-logo" src="" alt="Team 2">
+
+        <!-- Team Names -->
+        <div id="team1-name" class="team-name"></div>
+        <div id="team2-name" class="team-name"></div>
+    </div>
+
+    <!-- GSAP Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+
+    <script>
+        // Parse URL parameters
+        function getURLParams() {
+            const params = new URLSearchParams(window.location.search);
+            return {
+                team1: params.get('team1') || 'TEAM 1',
+                team2: params.get('team2') || 'TEAM 2',
+                logo1: params.get('logo1') || 'https://via.placeholder.com/200x200/FF6B6B/ffffff?text=TEAM+1',
+                logo2: params.get('logo2') || 'https://via.placeholder.com/200x200/4ECDC4/ffffff?text=TEAM+2'
+            };
+        }
+
+        // Initialize overlay
+        function initOverlay() {
+            const params = getURLParams();
+            
+            // Set team names and logos
+            document.getElementById('team1-name').textContent = params.team1;
+            document.getElementById('team2-name').textContent = params.team2;
+            document.getElementById('logo-team1').src = params.logo1;
+            document.getElementById('logo-team2').src = params.logo2;
+
+            // Start animation sequence
+            animateOverlay();
+        }
+
+        function animateOverlay() {
+            const timeline = gsap.timeline();
+
+            // Show court container
+            timeline.to('#volleyball-court', {
+                opacity: 1,
+                duration: 0.5
+            });
+
+            // Draw court lines using stroke-dashoffset
+            timeline.to('.court-line', {
+                strokeDashoffset: 0,
+                duration: 2,
+                stagger: 0.3,
+                ease: 'power2.inOut'
+            });
+
+            // Animate team logos with back.out effect
+            timeline.to('#logo-team1', {
+                opacity: 1,
+                scale: 1,
+                duration: 0.8,
+                ease: 'back.out(1.7)',
+                transformOrigin: 'center center'
+            }, '-=0.5');
+
+            timeline.to('#logo-team2', {
+                opacity: 1,
+                scale: 1,
+                duration: 0.8,
+                ease: 'back.out(1.7)',
+                transformOrigin: 'center center'
+            }, '-=0.6');
+
+            // Lightning effect
+            timeline.to('#lightning-effect', {
+                opacity: 1,
+                duration: 0.1,
+                repeat: 3,
+                yoyo: true
+            }, '+=0.3');
+
+            // VS text appears with scale and glow
+            timeline.fromTo('#vs-container', 
+                {
+                    opacity: 0,
+                    scale: 0.5
+                },
+                {
+                    opacity: 1,
+                    scale: 1,
+                    duration: 0.6,
+                    ease: 'back.out(2)'
+                }, 
+                '-=0.3'
+            );
+
+            // Pulse VS text
+            timeline.to('#vs-text', {
+                scale: 1.1,
+                duration: 0.3,
+                yoyo: true,
+                repeat: 1,
+                ease: 'power2.inOut'
+            });
+
+            // Show team names
+            timeline.to('#team1-name', {
+                opacity: 1,
+                y: -20,
+                duration: 0.6,
+                ease: 'power2.out'
+            }, '-=0.4');
+
+            timeline.to('#team2-name', {
+                opacity: 1,
+                y: -20,
+                duration: 0.6,
+                ease: 'power2.out'
+            }, '-=0.5');
+
+            // Optional: Hold for 3 seconds then fade out
+            timeline.to('#overlay-container', {
+                opacity: 1,
+                duration: 3
+            });
+
+            // Uncomment to auto-hide after display
+            // timeline.to('#overlay-container', {
+            //     opacity: 0,
+            //     duration: 1,
+            //     ease: 'power2.inOut'
+            // });
+        }
+
+        // Wait for images to load before animating
+        window.addEventListener('load', () => {
+            initOverlay();
+        });
+    </script>
+</body>
+</html>
