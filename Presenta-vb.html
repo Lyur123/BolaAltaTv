@@ -37,12 +37,21 @@
             opacity: 0;
         }
 
+        .court-fill {
+            fill: transparent;
+            transition: fill 0.8s ease-in-out;
+        }
+
+        .court-fill.filled {
+            fill: url(#sandGradient);
+        }
+
         .court-line {
             fill: none;
             stroke: #ffffff;
-            stroke-width: 4;
+            stroke-width: 5;
             stroke-linecap: round;
-            filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.8));
+            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.9));
         }
 
         .team-logo {
@@ -130,23 +139,24 @@
                 0 2px 5px rgba(0, 0, 0, 0.7);
             letter-spacing: 3px;
             opacity: 0;
+            z-index: 15;
         }
 
         #team1-name {
             left: 25%;
-            bottom: 20%;
+            bottom: 25%;
             transform: translateX(-50%);
         }
 
         #team2-name {
             right: 25%;
-            bottom: 20%;
+            bottom: 25%;
             transform: translateX(50%);
         }
 
         #competicion-name {
             position: absolute;
-            top: 15%;
+            top: 12%;
             left: 50%;
             transform: translateX(-50%);
             font-size: 36px;
@@ -161,6 +171,7 @@
             opacity: 0;
             text-align: center;
             max-width: 80%;
+            z-index: 15;
         }
     </style>
 </head>
@@ -170,18 +181,38 @@
         <div id="competicion-name"></div>
 
         <!-- SVG Volleyball Court -->
-        <svg id="volleyball-court" width="900" height="500" viewBox="0 0 900 500">
+        <svg id="volleyball-court" width="1400" height="800" viewBox="0 0 1400 800">
+            <!-- Gradiente para efecto arena -->
+            <defs>
+                <linearGradient id="sandGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" style="stop-color:#E8C79A;stop-opacity:0.4" />
+                    <stop offset="50%" style="stop-color:#D4A574;stop-opacity:0.5" />
+                    <stop offset="100%" style="stop-color:#C29960;stop-opacity:0.4" />
+                </linearGradient>
+                
+                <!-- Textura de arena sutil -->
+                <filter id="sandTexture">
+                    <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" result="noise"/>
+                    <feDiffuseLighting in="noise" lighting-color="#D4A574" surfaceScale="1">
+                        <feDistantLight azimuth="45" elevation="60"/>
+                    </feDiffuseLighting>
+                </filter>
+            </defs>
+
+            <!-- Relleno del campo (arena) -->
+            <rect id="court-sand" class="court-fill" x="100" y="100" width="1200" height="600" />
+            
             <!-- Outer court rectangle -->
-            <rect class="court-line" x="50" y="50" width="800" height="400" stroke-dasharray="2400" stroke-dashoffset="2400"/>
+            <rect class="court-line" x="100" y="100" width="1200" height="600" stroke-dasharray="3600" stroke-dashoffset="3600"/>
             
             <!-- Center line -->
-            <line class="court-line" x1="450" y1="50" x2="450" y2="450" stroke-dasharray="400" stroke-dashoffset="400"/>
+            <line class="court-line" x1="700" y1="100" x2="700" y2="700" stroke-dasharray="600" stroke-dashoffset="600"/>
             
             <!-- Attack line left -->
-            <line class="court-line" x1="250" y1="50" x2="250" y2="450" stroke-dasharray="400" stroke-dashoffset="400"/>
+            <line class="court-line" x1="400" y1="100" x2="400" y2="700" stroke-dasharray="600" stroke-dashoffset="600"/>
             
             <!-- Attack line right -->
-            <line class="court-line" x1="650" y1="50" x2="650" y2="450" stroke-dasharray="400" stroke-dashoffset="400"/>
+            <line class="court-line" x1="1000" y1="100" x2="1000" y2="700" stroke-dasharray="600" stroke-dashoffset="600"/>
         </svg>
 
         <!-- Lightning Effect -->
@@ -264,6 +295,11 @@
                 stagger: 0.3,
                 ease: 'power2.inOut'
             });
+
+            // Fill court with sand color after lines are drawn
+            timeline.add(() => {
+                document.getElementById('court-sand').classList.add('filled');
+            }, '-=0.3');
 
             // Animate team logos with back.out effect
             timeline.to('#logo-team1', {
@@ -350,3 +386,12 @@
     </script>
 </body>
 </html>
+🏐 Mejoras implementadas:
+✅ Campo más grande: 900x500 → 1400x800 (cubre toda la pantalla)
+✅ Líneas superiores e inferiores: Ahora quedan por encima del texto de competición y por debajo de los nombres de equipos
+✅ Efecto arena: Después de dibujarse las líneas, el interior del campo se colorea con:
+Gradiente de tonos arena/beige (#E8C79A, #D4A574, #C29960)
+Transición suave de 0.8s
+Semi-transparente para mantener la estética
+✅ Ajustes de z-index: Los textos quedan siempre visibles sobre el campo
+El campo ahora se ve mucho más profesional y realista con el efecto de cancha de arena que aparece gradualmente después del trazado de líneas! 🏖️
